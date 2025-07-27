@@ -1,10 +1,13 @@
 import os
 import sys
+import argparse
+
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-import argparse
+from prompts import system_prompt
+from call_function import available_functions
 
 def main():
     # Set up argument parser
@@ -33,7 +36,7 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
     
-    generate_content(client, messages, args.verbose)   
+    generate_content(client, messages, args.verbose)
 
 def generate_content(client, messages, verbose=False):
     """
@@ -46,7 +49,10 @@ def generate_content(client, messages, verbose=False):
     
     response = client.models.generate_content(
         model='gemini-2.0-flash-001', 
-        contents=messages
+        contents=messages,
+        config=types.GenerateContentConfig(
+            tools=[available_functions], system_instruction=system_prompt
+        ),        
     )
     
     if verbose:
@@ -54,10 +60,12 @@ def generate_content(client, messages, verbose=False):
         response_tokens = response.usage_metadata.candidates_token_count
         print(f'Prompt tokens: {prompt_token_count}')
         print(f'Response tokens: {response_tokens}')
-        
-    response_text = response.text    
-    print(f'Response: {response_text}')
 
+    if not response.function_calls:      
+        return response.text
     
+    for function_call_part in response.function_calls:
+        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+
 if __name__ == "__main__":
     main()

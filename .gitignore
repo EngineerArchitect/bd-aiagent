@@ -10,3 +10,7 @@ wheels/
 # Virtual environments
 .venv
 venv/
+
+# Test files
+calculator/pkg/morelorem.txt
+calculator/lorem.txt

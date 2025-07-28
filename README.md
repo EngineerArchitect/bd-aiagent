@@ -39,7 +39,8 @@ First add venv and then install dependencies
 
 ```shell
 $ uv venv
-$ uv pip install -r requirements.txt
+$ source .venv/bin/activate
+$ uv pip install .
 ```
 
 ## Testing
